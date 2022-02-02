@@ -23,8 +23,7 @@ RUN apt -qq install -y --no-install-recommends \
     # this package is required to fetch "contents" via "TLS"
     apt-transport-https \
     build-essential \
-    # install coreutils
-    coreutils \
+    coreutils bash \
     curl git \
     gnupg2 gcc \
     jq pv \
