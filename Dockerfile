@@ -30,7 +30,7 @@ RUN apt -qq install -y --no-install-recommends \
     jq pv \
     wget && \
     # clean up the container "layer", after we are done
-    rm -rf /var/lib/apt/lists /var/cache/apt/archives /tmp && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives /tmp
 
 # each instruction creates one layer
 # Only the instructions RUN, COPY, ADD create layers.
