@@ -42,32 +42,27 @@ function webm_conversion_process() {
 
     [[ $count_update -eq 0 ]] && echo -n "."
 
-    for ((i=0; i<$count_update; i++))
-    do
+    for ((i=0; i < $count_update; i++)); do
         update=$(echo $updates | jq -r ".result[$i]")   
     	tg_last_update_id=$(echo $update | jq -r ".update_id")
     	message_id=$(echo $update | jq -r ".message.message_id")
     	chat_id=$(echo $update | jq -r ".message.chat.id")
         text=$(echo $update | jq -r ".message.text")
 
-        local update_with_animation=$(echo $update | jq -r ".message.animation")
-        local update_with_video=$(echo $update | jq -r ".message.video")
+        local update_with_animation=$(echo $update | jq -r ".message | select(.animation !=null)")
+        local update_with_video=$(echo $update | jq -r ".message | select(.video !=null)")
         local message_caption=$(echo $update | jq -r ".message | select(.caption !=null)")
 
-        if [ ! -z "$update_with_animation" ]; then
-            msg='please wait. contact @DonateMeRoBot to support this bot'
+        if [ "${text}" != "null" ]; then
+            msg="/start: https://github.com/SpEcHiDe/Mp4ToWebmBot"
             result=$(curl -s "${tg_base_request_url}/sendMessage" \
                         -d chat_id="${chat_id}" \
                         -d text="${msg}" \
                         -d parse_mode="HTML" \
                         -d reply_to_message_id="${message_id}"
                 )
-            file_id=$(echo $update_with_animation | jq -r ".file_id")
-            [[ -n "${message_caption}" ]] && emojie="🤔" || emojie="${message_caption}"
-            tluser=$(call_api "$tg_bot_token" "$chat_id" "$message_id" "${file_id}" "${emojie}" )
-            echo $result
 
-        elif [ ! -z "$update_with_video" ]; then
+        elif [ ! -n "$update_with_animation" ]; then
             msg='please wait. contact @DonateMeRoBot to support this bot'
             result=$(curl -s "${tg_base_request_url}/sendMessage" \
                         -d chat_id="${chat_id}" \
@@ -78,18 +73,29 @@ function webm_conversion_process() {
             file_id=$(echo $update_with_animation | jq -r ".file_id")
             [[ -n "${message_caption}" ]] && emojie="🤔" || emojie="${message_caption}"
             tluser=$(call_api "$tg_bot_token" "$chat_id" "$message_id" "${file_id}" "${emojie}" )
-            echo ${tluser}
-            echo $result
+            echo $tluser
+
+        elif [ ! -n "$update_with_video" ]; then
+            msg='please wait. contact @DonateMeRoBot to support this bot'
+            result=$(curl -s "${tg_base_request_url}/sendMessage" \
+                        -d chat_id="${chat_id}" \
+                        -d text="${msg}" \
+                        -d parse_mode="HTML" \
+                        -d reply_to_message_id="${message_id}"
+                )
+            file_id=$(echo $update_with_animation | jq -r ".file_id")
+            [[ -n "${message_caption}" ]] && emojie="🤔" || emojie="${message_caption}"
+            tluser=$(call_api "$tg_bot_token" "$chat_id" "$message_id" "${file_id}" "${emojie}" )
+            echo $tluser
 
         else
-            msg="https://github.com/SpEcHiDe/Mp4ToWebmBot"
+            msg="else: https://github.com/SpEcHiDe/Mp4ToWebmBot"
             result=$(curl -s "${tg_base_request_url}/sendMessage" \
                         -d chat_id="${chat_id}" \
                         -d text="${msg}" \
                         -d parse_mode="HTML" \
                         -d reply_to_message_id="${message_id}"
                 )
-            echo $result
         fi
 
         tg_last_update_id=$(($tg_last_update_id + 1))
